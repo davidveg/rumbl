@@ -8,6 +8,11 @@
   </li>
 
   <li>
+    <strong>Category:</strong>
+    <%= @video.category.name %>
+  </li>
+
+  <li>
     <strong>Url:</strong>
     <%= @video.url %>
   </li>
@@ -29,5 +34,5 @@
 
 </ul>
 
-<%= link "Edit", to: video_path(@conn, :edit, @video) %>
-<%= link "Back", to: video_path(@conn, :index) %>
+<%= link "Edit", to: video_path(@conn, :edit, @video), class: "btn btn-default btn-xs" %><span/>
+<%= link "Back", to: video_path(@conn, :index) , class: "btn btn-default btn-xs"%>

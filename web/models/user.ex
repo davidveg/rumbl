@@ -12,15 +12,14 @@ use Rumbl.Web, :model
   end
 
   def changeset(model, params \\ :empty) do
-    model
-    |> cast(params, ~w(name username), [])
+    cast(model, params, ~w(name username password))
     |> validate_length(:username, min: 3, max: 20)
+    |> unique_constraint(:username)
   end
 
   def registration_changeset(model, params) do
-    model
-    |> changeset(params)
-    |> cast(params, ~w(password), [])
+    changeset(params)
+    |> cast(model, params, ~w(password))
     |> validate_length(:password, min: 6, max: 100)
     |> put_pass_hash()
   end

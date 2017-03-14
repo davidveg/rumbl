@@ -2,12 +2,23 @@ defmodule Rumbl.VideoController do
   use Rumbl.Web, :controller
 
   alias Rumbl.Video
+  alias Rumbl.Category
+
+  plug :load_categories when action in [:new, :create, :edit, :update]
 
   #defaulf action - uses conn.assigns.current_user on every action
   #this controller
   def action(conn, _) do
     apply(__MODULE__, action_name(conn),
         [conn, conn.params, conn.assigns.current_user])
+  end
+
+  defp load_categories(conn, _) do
+    query = Category
+    |> Category.alphabetical
+    |> Category.names_and_ids
+    categories = Repo.all query
+    assign(conn, :categories, categories)
   end
 
   def index(conn, _params, user) do
@@ -18,17 +29,17 @@ defmodule Rumbl.VideoController do
   def new(conn, _params, user) do
     changeset =
       user
-      |> Repo.build_assoc(:videos)
-      |> Video.changeset(%Video{})
+      |> build_assoc(:videos)
+      |> Video.changeset()
     render(conn, "new.html", changeset: changeset)
   end
 
   def create(conn, %{"video" => video_params}, user) do
+    video_params = Map.put(video_params, "view_count", 0)
     changeset =
       user
-      |> Repo.build_assoc(:videos)
-      |> Video.changeset(%Video{}, video_params)
-
+      |> build_assoc(:videos)
+      |> Video.changeset(video_params)
     case Repo.insert(changeset) do
       {:ok, _video} ->
         conn
@@ -41,10 +52,10 @@ defmodule Rumbl.VideoController do
 
   def show(conn, %{"id" => id}, user) do
     video = Repo.get!(user_videos(user), id)
-    changeset = Video.changeset(video, Map.from_struct(%{video | view_count: video.view_count + 1}))
+    changeset = Video.changeset(video, %{ view_count: video.view_count + 1})
     case Repo.update(changeset) do
         {:ok, video} ->
-          render(conn, "show.html", video: video)
+          render(conn, "show.html", video: Repo.preload(video, :category))
         {:error, video} ->
           conn
           |> put_flash(:error, "Error uptading view_count.")
