@@ -13,6 +13,7 @@ use Rumbl.Web, :model
 
   def changeset(model, params \\ :empty) do
     cast(model, params, ~w(name username))
+    |> validate_required([:username, :name])
     |> validate_length(:username, min: 3, max: 20)
     |> unique_constraint(:username)
   end
@@ -22,6 +23,7 @@ use Rumbl.Web, :model
     |> changeset(params)
     |> cast(params, ~w(password))
     |> validate_length(:password, min: 6, max: 100)
+    |> validate_required([:password])
     |> put_pass_hash()
   end
 
