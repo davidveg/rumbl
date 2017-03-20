@@ -8,6 +8,7 @@ defmodule Rumbl.Router do
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug Rumbl.Auth, repo: Rumbl.Repo
+    plug :fetch_user_token
   end
 
   pipeline :api do
@@ -32,4 +33,9 @@ defmodule Rumbl.Router do
   # scope "/api", Rumbl do
   #   pipe_through :api
   # end
+
+  def fetch_user_token(conn, _) do
+    conn
+    |> assign(:user_token, get_session(conn, :user_token))
+  end
 end
